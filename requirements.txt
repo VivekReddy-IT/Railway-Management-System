@@ -1,0 +1,19 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-CORS
+python-dotenv
+psycopg2-binary
+SQLAlchemy
+marshmallow
+python-dateutil
+streamlit>=1.45.1
+langchain>=0.2.0
+langchain-core>=0.2.0
+langchain-groq>=0.1.0
+langgraph>=0.1.0
+groq
+mysql-connector-python
+reportlab
+
+# ... rest of the file remains unchanged ... 

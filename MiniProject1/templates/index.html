@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    {% if current_user.is_authenticated %}
+        <div class="row mb-4">
+            <div class="col">
+                <h2>Welcome, {{ current_user.username }}!</h2>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Quick Stats -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">My Reservations</h5>
+                        <p class="card-text">You have {{ reservations|length }} active reservations.</p>
+                        <a href="{{ url_for('reservations') }}" class="btn btn-primary">View Reservations</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Available Trains -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Available Trains</h5>
+                        <p class="card-text">{{ trains|length }} trains available for booking.</p>
+                        <a href="{{ url_for('trains') }}" class="btn btn-primary">View Trains</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stations -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Stations</h5>
+                        <p class="card-text">{{ stations|length }} stations in our network.</p>
+                        <a href="{{ url_for('stations') }}" class="btn btn-primary">View Stations</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Reservations -->
+        {% if reservations %}
+        <div class="row mt-4">
+            <div class="col">
+                <h3>Recent Reservations</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>PNR</th>
+                                <th>Train</th>
+                                <th>Journey Date</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in reservations %}
+                            <tr>
+                                <td>{{ reservation.pnr }}</td>
+                                <td>{{ reservation.train.train_name }}</td>
+                                <td>{{ reservation.journey_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ reservation.source_station }}</td>
+                                <td>{{ reservation.destination_station }}</td>
+                                <td>
+                                    <span class="badge bg-{% if reservation.booking_status == 'CONFIRMED' %}success{% else %}warning{% endif %}">
+                                        {{ reservation.booking_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="viewPassengers('{{ reservation.pnr }}')">
+                                        View Passengers
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-8 text-center">
+                <h1>Welcome to Railway Reservation System</h1>
+                <p class="lead">Please login or register to access the railway reservation system.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary me-2">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary">Register</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Passengers Modal -->
+<div class="modal fade" id="passengersModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Passenger Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="passengersModalBody">
+                <!-- Passenger details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<script>
+function viewPassengers(pnr) {
+    fetch(`/api/reservations/${pnr}/passengers`)
+        .then(response => response.json())
+        .then(passengers => {
+            let html = '<div class="list-group">';
+            passengers.forEach(passenger => {
+                html += `
+                    <div class="list-group-item">
+                        <h6>${passenger.first_name} ${passenger.last_name}</h6>
+                        <p class="mb-1">Email: ${passenger.email || 'N/A'}</p>
+                        <p class="mb-1">Phone: ${passenger.phone}</p>
+                        <p class="mb-1">Gender: ${passenger.gender}</p>
+                        <p class="mb-0">Fare: ₹${passenger.fare}</p>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            document.getElementById('passengersModalBody').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('passengersModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading passenger details');
+        });
+}
+</script>
+{% endif %}
+{% endblock %} 

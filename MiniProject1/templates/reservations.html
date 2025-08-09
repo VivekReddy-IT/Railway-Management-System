@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Reservations</h2>
+        
+        <!-- New Reservation Button -->
+        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newReservationModal">
+            New Reservation
+        </button>
+
+        <!-- Reservations Table -->
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>PNR</th>
+                        <th>Train</th>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Status</th>
+                        <th>Total Fare</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.pnr }}</td>
+                        <td>{{ reservation.train_id }}</td>
+                        <td>{{ reservation.journey_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ reservation.source_station }}</td>
+                        <td>{{ reservation.destination_station }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if reservation.booking_status == 'CONFIRMED' else 'warning' }}">
+                                {{ reservation.booking_status }}
+                            </span>
+                        </td>
+                        <td>₹{{ "%.2f"|format(reservation.total_fare) }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info view-passengers" data-pnr="{{ reservation.pnr }}">
+                                View Passengers
+                            </button>
+                            {% if reservation.booking_status == 'CONFIRMED' %}
+                            <button class="btn btn-sm btn-warning cancel-reservation" data-pnr="{{ reservation.pnr }}">
+                                Cancel
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- New Reservation Modal -->
+<div class="modal fade" id="newReservationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Reservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reservationForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="train_id" class="form-label">Train</label>
+                            <select class="form-select" id="train_id" name="train_id" required>
+                                <option value="">Select Train</option>
+                                {% for train in trains %}
+                                <option value="{{ train.train_id }}">{{ train.train_name }} ({{ train.train_id }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="journey_date" class="form-label">Journey Date</label>
+                            <input type="date" class="form-control" id="journey_date" name="journey_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="source_station" class="form-label">Source Station</label>
+                            <select class="form-select" id="source_station" name="source_station" required>
+                                <option value="">Select Station</option>
+                                {% for station in stations %}
+                                <option value="{{ station.station_code }}">{{ station.station_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="destination_station" class="form-label">Destination Station</label>
+                            <select class="form-select" id="destination_station" name="destination_station" required>
+                                <option value="">Select Station</option>
+                                {% for station in stations %}
+                                <option value="{{ station.station_code }}">{{ station.station_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="total_fare" class="form-label">Total Fare</label>
+                            <input type="number" class="form-control" id="total_fare" name="total_fare" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="quota_id" class="form-label">Quota</label>
+                            <select class="form-select" id="quota_id" name="quota_id">
+                                <option value="GN">General</option>
+                                <option value="LD">Ladies</option>
+                                <option value="TQ">Tatkal</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4">Passenger Details</h5>
+                    <div id="passengers">
+                        <div class="passenger-form mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-control" name="passengers[0][first_name]" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" name="passengers[0][last_name]" required>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="passengers[0][email]">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" name="passengers[0][phone]" required>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" name="passengers[0][date_of_birth]">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Gender</label>
+                                    <select class="form-select" name="passengers[0][gender]">
+                                        <option value="MALE">Male</option>
+                                        <option value="FEMALE">Female</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-12">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" name="passengers[0][address]"></textarea>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Fare</label>
+                                    <input type="number" class="form-control" name="passengers[0][fare]" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" id="addPassenger">Add Another Passenger</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submitReservation">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Passengers Modal -->
+<div class="modal fade" id="viewPassengersModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Passenger Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="passengerDetails"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancellation Modal -->
+<div class="modal fade" id="cancelReservationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Reservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cancelReservationForm">
+                    <input type="hidden" id="cancelPNR" name="pnr">
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">Reason for Cancellation</label>
+                        <textarea class="form-control" id="cancelReason" name="reason" rows="3" required></textarea>
+                    </div>
+                </form>
+                <div id="cancelResult" class="mt-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" id="confirmCancelBtn">Confirm Cancellation</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let passengerCount = 1;
+
+    // Add passenger form
+    document.getElementById('addPassenger').addEventListener('click', function() {
+        const passengersDiv = document.getElementById('passengers');
+        const newPassengerForm = document.querySelector('.passenger-form').cloneNode(true);
+        
+        // Update input names with new index
+        const inputs = newPassengerForm.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            const name = input.getAttribute('name');
+            if (name) {
+                input.setAttribute('name', name.replace(/\[\d+\]/, `[${passengerCount}]`));
+                input.value = ''; // Clear values
+            }
+        });
+        
+        passengersDiv.appendChild(newPassengerForm);
+        passengerCount++;
+    });
+
+    // Submit reservation
+    document.getElementById('submitReservation').addEventListener('click', function() {
+        const form = document.getElementById('reservationForm');
+        const formData = new FormData(form);
+        
+        // Convert form data to JSON
+        const data = {
+            train_id: formData.get('train_id'),
+            journey_date: formData.get('journey_date'),
+            source_station: formData.get('source_station'),
+            destination_station: formData.get('destination_station'),
+            total_fare: parseFloat(formData.get('total_fare')),
+            quota_id: formData.get('quota_id'),
+            passengers: []
+        };
+
+        // Collect passenger data
+        for (let i = 0; i < passengerCount; i++) {
+            data.passengers.push({
+                first_name: formData.get(`passengers[${i}][first_name]`),
+                last_name: formData.get(`passengers[${i}][last_name]`),
+                email: formData.get(`passengers[${i}][email]`),
+                phone: formData.get(`passengers[${i}][phone]`),
+                date_of_birth: formData.get(`passengers[${i}][date_of_birth]`),
+                gender: formData.get(`passengers[${i}][gender]`),
+                address: formData.get(`passengers[${i}][address]`),
+                fare: parseFloat(formData.get(`passengers[${i}][fare]`))
+            });
+        }
+
+        // Send data to server
+        fetch('/api/reservations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert('Reservation created successfully! PNR: ' + data.pnr);
+                location.reload(); // Refresh the page
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error creating reservation');
+        });
+    });
+
+    // View passengers
+    document.querySelectorAll('.view-passengers').forEach(button => {
+        button.addEventListener('click', function() {
+            const pnr = this.dataset.pnr;
+            fetch(`/api/reservations/${pnr}/passengers`)
+                .then(response => response.json())
+                .then(passengers => {
+                    const passengerDetails = document.getElementById('passengerDetails');
+                    passengerDetails.innerHTML = passengers.map(p => `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h6>${p.first_name} ${p.last_name}</h6>
+                                <p>Email: ${p.email || 'N/A'}<br>
+                                   Phone: ${p.phone}<br>
+                                   Gender: ${p.gender}<br>
+                                   Fare: ₹${p.fare.toFixed(2)}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    new bootstrap.Modal(document.getElementById('viewPassengersModal')).show();
+                });
+        });
+    });
+
+    // Cancel reservation
+    document.querySelectorAll('.cancel-reservation').forEach(button => {
+        button.addEventListener('click', function() {
+            const pnr = this.dataset.pnr;
+            document.getElementById('cancelPNR').value = pnr;
+            document.getElementById('cancelReason').value = '';
+            document.getElementById('cancelResult').innerHTML = '';
+            new bootstrap.Modal(document.getElementById('cancelReservationModal')).show();
+        });
+    });
+
+    document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+        const pnr = document.getElementById('cancelPNR').value;
+        const reason = document.getElementById('cancelReason').value.trim();
+        const resultDiv = document.getElementById('cancelResult');
+        if (!reason) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Please provide a reason for cancellation.</div>';
+            return;
+        }
+        const formData = new URLSearchParams();
+        formData.append('reason', reason);
+        fetch(`/cancel-reservation/${pnr}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                resultDiv.innerHTML = `<div class='alert alert-success'>${data.message}</div>`;
+                setTimeout(() => { window.location.reload(); }, 2000);
+            } else {
+                resultDiv.innerHTML = `<div class='alert alert-danger'>${data.message || 'Error cancelling reservation.'}</div>`;
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = `<div class='alert alert-danger'>Error cancelling reservation. Please try again.</div>`;
+        });
+    });
+});
+</script>
+{% endblock %} 

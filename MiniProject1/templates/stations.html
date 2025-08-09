@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Stations</h2>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#stationModal">
+            New Station
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Station Code</th>
+                    <th>Name</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Platforms</th>
+                    <th>Facilities</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for station in stations %}
+                <tr>
+                    <td>{{ station.station_code }}</td>
+                    <td>{{ station.station_name }}</td>
+                    <td>{{ station.latitude }}</td>
+                    <td>{{ station.longitude }}</td>
+                    <td>{{ station.total_platforms }}</td>
+                    <td>{{ station.facilities }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteStation('{{ station.station_code }}')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Station Modal -->
+<div class="modal fade" id="stationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Station</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="stationForm">
+                    <div class="mb-3">
+                        <label class="form-label">Station Code</label>
+                        <input type="text" class="form-control" name="station_code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Station Name</label>
+                        <input type="text" class="form-control" name="station_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Latitude</label>
+                        <input type="number" step="any" class="form-control" name="latitude">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Longitude</label>
+                        <input type="number" step="any" class="form-control" name="longitude">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Platforms</label>
+                        <input type="number" class="form-control" name="total_platforms">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Facilities</label>
+                        <textarea class="form-control" name="facilities" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="submitStation()">Create Station</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function submitStation() {
+    const form = document.getElementById('stationForm');
+    const formData = new FormData(form);
+    const data = {
+        station_code: formData.get('station_code'),
+        station_name: formData.get('station_name'),
+        latitude: parseFloat(formData.get('latitude')) || null,
+        longitude: parseFloat(formData.get('longitude')) || null,
+        total_platforms: parseInt(formData.get('total_platforms')) || null,
+        facilities: formData.get('facilities')
+    };
+
+    fetch('/api/stations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Station created successfully');
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating station');
+    });
+}
+
+function deleteStation(stationCode) {
+    if (confirm('Are you sure you want to delete this station?')) {
+        fetch(`/api/stations/${stationCode}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Station deleted successfully');
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting station');
+        });
+    }
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Railway Reservation System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* Custom styles for dark theme */
+        [data-bs-theme="dark"] {
+            --bs-body-bg: #121212;
+            --bs-body-color: #ffffff;
+            --bs-navbar-bg: #1e1e1e;
+            --bs-card-bg: #1e1e1e;
+            --bs-modal-bg: #1e1e1e;
+            --bs-border-color: #2d2d2d;
+        }
+
+        /* Attractive gradient background with subtle pattern */
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+            background-attachment: fixed;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.18;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+        }
+        .container, .container-fluid, .row, .card, .modal-content, .table, .navbar, .dropdown-menu {
+            position: relative;
+            z-index: 1;
+        }
+        .card, .modal-content, .table {
+            background: rgba(255,255,255,0.92);
+            box-shadow: 0 4px 24px rgba(44, 62, 80, 0.08);
+            border-radius: 1rem;
+        }
+        [data-bs-theme="dark"] body {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+        }
+        [data-bs-theme="dark"] body::before {
+            opacity: 0.10;
+        }
+        [data-bs-theme="dark"] .card, [data-bs-theme="dark"] .modal-content, [data-bs-theme="dark"] .table {
+            background: rgba(30,30,30,0.96);
+        }
+
+        [data-bs-theme="dark"] .navbar {
+            background-color: var(--bs-navbar-bg) !important;
+        }
+
+        [data-bs-theme="dark"] .card {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-border-color);
+        }
+
+        [data-bs-theme="dark"] .modal-content {
+            background-color: var(--bs-modal-bg);
+            border-color: var(--bs-border-color);
+        }
+        
+        /* Theme toggle button styles */
+        .theme-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            padding: 12px;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        [data-bs-theme="light"] .theme-toggle {
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        [data-bs-theme="dark"] .theme-toggle {
+            background-color: #ffffff;
+            color: #1e1e1e;
+            border-color: #2d2d2d;
+        }
+
+        /* Icon animations */
+        .theme-toggle svg {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-toggle:hover svg {
+            transform: rotate(360deg);
+        }
+
+        /* Hide sun icon in dark mode, moon icon in light mode */
+        [data-bs-theme="dark"] .theme-toggle .sun-icon {
+            display: none;
+        }
+
+        [data-bs-theme="light"] .theme-toggle .moon-icon {
+            display: none;
+        }
+
+        /* Additional dark mode styles */
+        [data-bs-theme="dark"] .table {
+            --bs-table-bg: #1e1e1e;
+            --bs-table-color: #ffffff;
+            --bs-table-border-color: #2d2d2d;
+        }
+
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select {
+            background-color: #2d2d2d;
+            border-color: #3d3d3d;
+            color: #ffffff;
+        }
+
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
+            background-color: #2d2d2d;
+            border-color: #4d4d4d;
+            color: #ffffff;
+        }
+
+        [data-bs-theme="dark"] .dropdown-menu {
+            background-color: #1e1e1e;
+            border-color: #2d2d2d;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item {
+            color: #ffffff;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item:hover {
+            background-color: #2d2d2d;
+        }
+
+        .dropdown-menu {
+            z-index: 3000 !important;
+            box-shadow: 0 8px 32px rgba(44,62,80,0.18);
+            pointer-events: auto !important;
+            background: #fff !important;
+            border: 1px solid #e0e0e0;
+            color: #222;
+            opacity: 1 !important;
+        }
+        body.dropdown-open .card,
+        body.dropdown-open .modal-content,
+        body.dropdown-open .table {
+            pointer-events: none !important;
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Railway Reservation System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('trains') }}">Trains</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stations') }}">Stations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('reservations') }}">Reservations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('chat') }}">
+                            <i class="fas fa-comments"></i> Chat Assistant
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            {{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <svg class="sun-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
+
+    <script>
+        // Enhanced theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Add transition class
+            document.body.style.transition = 'background-color 0.3s ease';
+            
+            // Change theme
+            html.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Remove transition after it's complete
+            setTimeout(() => {
+                document.body.style.transition = '';
+            }, 300);
+        }
+
+        // Set theme on page load with transition prevention
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            // Set initial theme without transition
+            document.body.style.transition = 'none';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            // Allow transitions after initial load
+            setTimeout(() => {
+                document.body.style.transition = '';
+            }, 100);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.dropdown').forEach(function(dropdown) {
+                dropdown.addEventListener('show.bs.dropdown', function () {
+                    document.body.classList.add('dropdown-open');
+                });
+                dropdown.addEventListener('hide.bs.dropdown', function () {
+                    document.body.classList.remove('dropdown-open');
+                });
+            });
+        });
+
+        // Robust dropdown fix: move dropdown menu to end of body when open
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.dropdown-toggle').forEach(function(toggle) {
+                toggle.addEventListener('show.bs.dropdown', function (e) {
+                    var menu = this.parentElement.querySelector('.dropdown-menu');
+                    if (menu && !menu.classList.contains('moved-to-body')) {
+                        document.body.appendChild(menu);
+                        menu.classList.add('moved-to-body');
+                        // Position the menu below the toggle
+                        var rect = this.getBoundingClientRect();
+                        menu.style.position = 'absolute';
+                        menu.style.left = rect.left + 'px';
+                        menu.style.top = (rect.bottom + window.scrollY) + 'px';
+                        menu.style.minWidth = rect.width + 'px';
+                        menu.style.display = 'block';
+                    }
+                });
+                toggle.addEventListener('hide.bs.dropdown', function (e) {
+                    var menu = document.querySelector('.dropdown-menu.moved-to-body');
+                    if (menu) {
+                        menu.style.display = '';
+                        menu.classList.remove('moved-to-body');
+                        // Move it back to its original parent
+                        this.parentElement.appendChild(menu);
+                        menu.style.position = '';
+                        menu.style.left = '';
+                        menu.style.top = '';
+                        menu.style.minWidth = '';
+                    }
+                });
+            });
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

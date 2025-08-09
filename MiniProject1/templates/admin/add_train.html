@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Add New Train</h2>
+    <form method="POST" class="mt-4">
+        <div class="form-group mb-3">
+            <label for="name">Train Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="source">Source Station</label>
+            <input type="text" class="form-control" id="source" name="source" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="destination">Destination Station</label>
+            <input type="text" class="form-control" id="destination" name="destination" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="departure_time">Departure Time</label>
+            <input type="time" class="form-control" id="departure_time" name="departure_time" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="arrival_time">Arrival Time</label>
+            <input type="time" class="form-control" id="arrival_time" name="arrival_time" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="ac_capacity">AC Coach Capacity</label>
+            <input type="number" class="form-control" id="ac_capacity" name="ac_capacity" value="50" min="0" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="nonac_capacity">Non-AC Coach Capacity</label>
+            <input type="number" class="form-control" id="nonac_capacity" name="nonac_capacity" value="100" min="0" required>
+        </div>
+        <div class="form-group mb-3">
+            <label for="base_fare">Base Fare (₹)</label>
+            <input type="number" class="form-control" id="base_fare" name="base_fare" step="0.01" min="0" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Train</button>
+        <a href="{{ url_for('admin_trains') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 
